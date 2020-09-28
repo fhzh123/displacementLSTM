@@ -14,8 +14,8 @@ from torch.nn.modules.activation import MultiheadAttention
 class model(nn.Module):
     def __init__(self, d_model, n_head, dim_feedforward, n_layers, dropout):
         super(model, self).__init__()
-        self.src_input_linear = nn.Linear(2, d_model)
-        self.trg_input_linear = nn.Linear(1, d_model)
+        # self.src_input_linear = nn.Linear(2, d_model)
+        # self.trg_input_linear = nn.Linear(1, d_model)
         self.dropout = nn.Dropout(dropout)
         # Transformer
         # self_attn = MultiheadAttention(d_model, n_head, dropout=dropout)
@@ -25,24 +25,28 @@ class model(nn.Module):
         # encoder_layers = nn.TransformerEncoderLayer(d_model=d_model, nhead=n_head, dim_feedforward=dim_feedforward, 
         #                                             dropout=dropout, activation='gelu')
         # self.transformer_encoder = nn.TransformerEncoder(encoder_layers, n_layers)
-        self.transformer_ = nn.Transformer(d_model=d_model, nhead=n_head,
-                                           num_encoder_layers=n_layers,
-                                           num_decoder_layers=n_layers,
-                                           dim_feedforward=dim_feedforward,
-                                           dropout=dropout, activation='gelu',)
-        self.output_linear = nn.Linear(d_model, 1)
+        # self.transformer_ = nn.Transformer(d_model=d_model, nhead=n_head,
+        #                                    num_encoder_layers=n_layers,
+        #                                    num_decoder_layers=n_layers,
+        #                                    dim_feedforward=dim_feedforward,
+        #                                    dropout=dropout, activation='gelu',)
+        self.gru = nn.GRU(2, d_model, num_layers=n_layers, bias=True, batch_first=True,
+                          bidirectional=True)
+        self.output_linear = nn.Linear(d_model*2, 1)
 
-    def forward(self, sequence, target):
+    def forward(self, sequence, target=None):
         sequence = sequence.transpose(0, 1)
-        target = target.transpose(0, 1).unsqueeze(2)
-        output = self.src_input_linear(sequence)
-        target = self.trg_input_linear(target)
+        # target = target.transpose(0, 1).unsqueeze(2)
+        # output = self.src_input_linear(sequence)
+        # target = self.trg_input_linear(target)
         # for i in range(len(self.encoders)):
         #     output = self.encoders[i](output)
         # output = self.transformer_encoder(output, src_key_padding_mask=None)
-        output = self.transformer_(output, target)
+        # output = self.transformer_(sequence, target)
+        output, hidden = self.gru(sequence)
+        output = output.transpose(0, 1)
         output = self.output_linear(self.dropout(F.gelu(output)))
-        return output.transpose(0, 1)
+        return output
 
 class TransformerEncoderLayer(nn.Module):
     def __init__(self, d_model, self_attn, dim_feedforward=2048, dropout=0.1, 

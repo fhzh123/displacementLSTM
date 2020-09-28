@@ -83,7 +83,7 @@ def main(args):
 
                 # Track history if only in train
                 with torch.set_grad_enabled(phase == 'train'):
-                    outputs = model_(x, y).squeeze(2)
+                    outputs = model_(x).squeeze(2)
                     loss = criterion(outputs, y)
 
                     # Backward + optimize only if in training phase
@@ -123,8 +123,6 @@ def main(args):
                 
             spend_time = (time.time() - start_time) / 60
             print('{} Loss: {:.4f} Time: {:.3f}min'.format(phase, epoch_loss, spend_time))
-
-
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='argparser')

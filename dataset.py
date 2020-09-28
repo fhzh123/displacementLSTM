@@ -33,7 +33,7 @@ class CustomDataset(Dataset):
     def __getitem__(self, index):
         x_out = self.X[index].astype(np.float32)
         y_out = self.Y[index].astype(np.float32)
-        return x_out * 100, y_out * 100
+        return x_out, y_out
 
     def __len__(self):
         return self.num_data
